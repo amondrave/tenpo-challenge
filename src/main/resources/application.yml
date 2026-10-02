@@ -4,11 +4,33 @@ spring:
   jackson:
     generator:
       write-bigdecimal-as-plain: true
+  r2dbc:
+    url: r2dbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:tenpo}
+    username: ${DB_USER:tenpo}
+    password: ${DB_PASSWORD:tenpo}
+  flyway:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:tenpo}
+    user: ${DB_USER:tenpo}
+    password: ${DB_PASSWORD:tenpo}
 
 percentage-provider:
   value: 10
   failure-mode: none
   timeout: 500ms
+
+rate-limit:
+  capacity: 3
+  refill-tokens: 3
+  refill-period: 1m
+
+history:
+  capture:
+    max-request-bytes: 16KB
+    max-response-bytes: 64KB
+  writer:
+    thread-cap: 4
+    queued-task-cap: 1000
+    timeout: 5s
 
 resilience4j:
   retry:

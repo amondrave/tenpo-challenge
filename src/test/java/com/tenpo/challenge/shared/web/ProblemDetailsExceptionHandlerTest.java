@@ -1,8 +1,5 @@
 package com.tenpo.challenge.shared.web;
 
-import jakarta.validation.Validation;
-import jakarta.validation.constraints.NotNull;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -10,16 +7,6 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class ProblemDetailsExceptionHandlerTest {
-
-    @BeforeAll
-    static void warmUpBeanValidationMessageInterpolation() {
-        try (var factory = Validation.buildDefaultValidatorFactory()) {
-            factory.getValidator().validate(new WarmUpTarget(null));
-        }
-    }
-
-    private record WarmUpTarget(@NotNull Object value) {
-    }
 
     private final WebTestClient webTestClient = WebTestClient
         .bindToController(new ThrowingTestController())

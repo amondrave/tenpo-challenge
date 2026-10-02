@@ -1,0 +1,6 @@
+rate-limit:
+  capacity: 1000
+
+spring:
+  codec:
+    max-in-memory-size: 8MB

@@ -13,6 +13,8 @@ import reactor.test.StepVerifier;
 import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -43,5 +45,22 @@ class CalculationServiceTest {
         StepVerifier.create(service.calculate(BigDecimal.valueOf(5), BigDecimal.valueOf(5)))
             .expectError(ExternalServiceUnavailableException.class)
             .verify();
+    }
+
+    @Test
+    void doesNotCachePercentageAcrossSequentialCalls() {
+        when(percentageProviderPort.currentPercentage())
+            .thenReturn(Mono.just(new Percentage(BigDecimal.TEN)));
+
+        CalculationService service = new CalculationService(percentageProviderPort);
+
+        StepVerifier.create(service.calculate(BigDecimal.valueOf(5), BigDecimal.valueOf(5)))
+            .expectNextCount(1)
+            .verifyComplete();
+        StepVerifier.create(service.calculate(BigDecimal.valueOf(5), BigDecimal.valueOf(5)))
+            .expectNextCount(1)
+            .verifyComplete();
+
+        verify(percentageProviderPort, times(2)).currentPercentage();
     }
 }

@@ -3,6 +3,7 @@ package com.tenpo.challenge.shared.web;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.tenpo.challenge.shared.error.ExternalServiceUnavailableException;
+import org.springframework.context.MessageSourceResolvable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -12,6 +13,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.bind.support.WebExchangeBindException;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.reactive.result.method.annotation.ResponseEntityExceptionHandler;
 import org.springframework.web.server.MethodNotAllowedException;
 import org.springframework.web.server.ResponseStatusException;
@@ -46,6 +48,12 @@ public class ProblemDetailsExceptionHandler extends ResponseEntityExceptionHandl
     protected Mono<ResponseEntity<Object>> handleServerWebInputException(
             ServerWebInputException ex, HttpHeaders headers, HttpStatusCode status, ServerWebExchange exchange) {
         return Mono.just(validationResponse(status, headers, exchange, List.of(fieldViolation(ex))));
+    }
+
+    @Override
+    protected Mono<ResponseEntity<Object>> handleHandlerMethodValidationException(
+            HandlerMethodValidationException ex, HttpHeaders headers, HttpStatusCode status, ServerWebExchange exchange) {
+        return Mono.just(validationResponse(status, headers, exchange, parameterErrors(ex)));
     }
 
     @Override
@@ -116,6 +124,17 @@ public class ProblemDetailsExceptionHandler extends ResponseEntityExceptionHandl
             .orElseGet(() -> Map.of(
                 "field", "body",
                 "message", Optional.ofNullable(ex.getReason()).orElse("Malformed request body")));
+    }
+
+    private List<Map<String, String>> parameterErrors(HandlerMethodValidationException ex) {
+        return ex.getParameterValidationResults().stream()
+            .map(result -> Map.of(
+                "field", Optional.ofNullable(result.getMethodParameter().getParameterName()).orElse("parameter"),
+                "message", result.getResolvableErrors().stream()
+                    .findFirst()
+                    .map(MessageSourceResolvable::getDefaultMessage)
+                    .orElse("is invalid")))
+            .toList();
     }
 
     private Map<String, String> toFieldViolation(InvalidFormatException invalidFormatException) {
