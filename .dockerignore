@@ -1,0 +1,9 @@
+build
+.gradle
+.git
+openspec
+.atl
+*.pdf
+.idea
+.vscode
+.DS_Store

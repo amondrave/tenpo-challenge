@@ -25,10 +25,12 @@ public class RateLimitFilter implements WebFilter {
 
     private final Bucket bucket;
     private final ProblemDetailWriter problemDetailWriter;
+    private final RateLimitProperties properties;
 
-    public RateLimitFilter(Bucket bucket, ProblemDetailWriter problemDetailWriter) {
+    public RateLimitFilter(Bucket bucket, ProblemDetailWriter problemDetailWriter, RateLimitProperties properties) {
         this.bucket = bucket;
         this.problemDetailWriter = problemDetailWriter;
+        this.properties = properties;
     }
 
     @Override
@@ -58,7 +60,8 @@ public class RateLimitFilter implements WebFilter {
     private ProblemDetail tooManyRequestsProblem(ServerWebExchange exchange, long waitSeconds) {
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
             HttpStatus.TOO_MANY_REQUESTS,
-            "Rate limit of 3 requests per minute exceeded. Retry after " + waitSeconds + " seconds.");
+            "Rate limit of %d requests per %d seconds exceeded. Retry after %d seconds."
+                .formatted(properties.capacity(), properties.refillPeriod().toSeconds(), waitSeconds));
         problemDetail.setTitle("Too Many Requests");
         problemDetail.setInstance(exchange.getRequest().getURI());
         return problemDetail;

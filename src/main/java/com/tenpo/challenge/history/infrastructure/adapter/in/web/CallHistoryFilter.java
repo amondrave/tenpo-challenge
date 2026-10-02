@@ -76,6 +76,7 @@ public class CallHistoryFilter implements WebFilter {
             .doOnNext(requestBytesHolder::set)
             .flatMap(requestBytes -> continueChain(exchange, chain, decoratedResponse, requestBytes))
             .onErrorResume(DataBufferLimitException.class, error -> tooLarge(exchange, decoratedResponse))
+            .onErrorResume(Throwable.class, error -> internalError(exchange, decoratedResponse))
             .doFinally(signal -> dispatch(exchange, requestBytesHolder.get(), decoratedResponse, responseSink));
     }
 
@@ -95,6 +96,14 @@ public class CallHistoryFilter implements WebFilter {
             HttpStatus.PAYLOAD_TOO_LARGE,
             "Request body exceeds the maximum accepted size of " + maxRequestBytes + " bytes");
         problemDetail.setTitle("Payload Too Large");
+        problemDetail.setInstance(exchange.getRequest().getURI());
+        return problemDetailWriter.write(decoratedResponse, problemDetail);
+    }
+
+    private Mono<Void> internalError(ServerWebExchange exchange, CapturingResponseDecorator decoratedResponse) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
+            HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred");
+        problemDetail.setTitle("Internal Server Error");
         problemDetail.setInstance(exchange.getRequest().getURI());
         return problemDetailWriter.write(decoratedResponse, problemDetail);
     }

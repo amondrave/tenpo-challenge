@@ -21,7 +21,8 @@ public class RateLimitConfig {
     }
 
     @Bean
-    public RateLimitFilter rateLimitFilter(Bucket rateLimitBucket, ProblemDetailWriter problemDetailWriter) {
-        return new RateLimitFilter(rateLimitBucket, problemDetailWriter);
+    public RateLimitFilter rateLimitFilter(
+            Bucket rateLimitBucket, ProblemDetailWriter problemDetailWriter, RateLimitProperties properties) {
+        return new RateLimitFilter(rateLimitBucket, problemDetailWriter, properties);
     }
 }

@@ -1,0 +1,39 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: tenpo
+      POSTGRES_USER: tenpo
+      POSTGRES_PASSWORD: tenpo
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tenpo -d tenpo"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - tenpo-db:/var/lib/postgresql/data
+
+  api:
+    image: discarok/tenpo-challenge-api:${TAG:-latest}
+    build: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: tenpo
+      DB_USER: tenpo
+      DB_PASSWORD: tenpo
+      PERCENTAGE_PROVIDER_FAILURE_MODE: ${PERCENTAGE_PROVIDER_FAILURE_MODE:-none}
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  tenpo-db:
