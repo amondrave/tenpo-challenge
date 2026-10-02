@@ -1,0 +1,32 @@
+spring:
+  application:
+    name: tenpo-challenge-api
+  jackson:
+    generator:
+      write-bigdecimal-as-plain: true
+
+percentage-provider:
+  value: 10
+  failure-mode: none
+  timeout: 500ms
+
+resilience4j:
+  retry:
+    instances:
+      percentageProvider:
+        max-attempts: 3
+        wait-duration: 200ms
+        enable-exponential-backoff: true
+        exponential-backoff-multiplier: 2
+        exponential-max-wait-duration: 1s
+        retry-exceptions:
+          - com.tenpo.challenge.calculation.infrastructure.adapter.out.external.PercentageProviderUnavailableException
+          - java.util.concurrent.TimeoutException
+        ignore-exceptions:
+          - com.tenpo.challenge.calculation.infrastructure.adapter.out.external.PercentageProviderClientErrorException
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health

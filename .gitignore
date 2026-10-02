@@ -1,0 +1,24 @@
+# Local AI runtime state
+.atl/
+
+# SDD planning artifacts (kept local for the challenge)
+openspec/
+
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+
+# OS
+.DS_Store
+
+# Local env
+.env
