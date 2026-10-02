@@ -56,6 +56,30 @@ class RateLimitIntegrationTest {
     }
 
     @Test
+    void limitAppliesAcrossDifferentEndpoints() {
+        webTestClient.post().uri("/api/v1/calculate")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue("{\"num1\": 5, \"num2\": 5}")
+            .exchange()
+            .expectStatus().isOk();
+
+        webTestClient.post().uri("/api/v1/calculate")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue("{\"num1\": 5, \"num2\": 5}")
+            .exchange()
+            .expectStatus().isOk();
+
+        webTestClient.get().uri("/api/v1/history?page=0&size=5")
+            .exchange()
+            .expectStatus().isOk();
+
+        webTestClient.get().uri("/api/v1/history?page=0&size=5")
+            .exchange()
+            .expectStatus().isEqualTo(429)
+            .expectHeader().contentType(MediaType.APPLICATION_PROBLEM_JSON);
+    }
+
+    @Test
     void actuatorHealthDoesNotConsumeRateLimitTokens() {
         for (int i = 0; i < 5; i++) {
             webTestClient.get().uri("/actuator/health").exchange().expectStatus().isOk();

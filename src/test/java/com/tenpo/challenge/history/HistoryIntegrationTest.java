@@ -44,6 +44,13 @@ class HistoryIntegrationTest {
                 .expectBody()
                 .jsonPath("$.content[?(@.path=='/api/v1/calculate')]").exists()
                 .jsonPath("$.content[?(@.path=='/api/v1/calculate')].responseStatus").isEqualTo(200));
+
+        await().atMost(Duration.ofSeconds(15)).untilAsserted(() ->
+            webTestClient.get().uri("/api/v1/history?page=0&size=50")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.content[?(@.path=='/api/v1/history')]").exists());
     }
 
     @Test
